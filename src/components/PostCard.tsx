@@ -9,19 +9,18 @@ export interface PostCardProps {
   post: PostItemResponse;
   aspect?: Aspect;
   className?: string;
+  isNew: boolean;
 }
 
-export default function PostCard({ post, aspect = "4/3", className = "" }: PostCardProps) {
+export default function PostCard({ post, aspect = "4/3", className = "", isNew = false }: PostCardProps) {
   const ymd = formatYmd(post.updatedAt || post.createdAt);
   const aspectClass = aspect === "16/9" ? "aspect-[16/9]" : "aspect-[4/3]";
 
   return (
     <article className={`bg-white rounded-3xl ${className}`}>
-      <div className="p-3 md:p-4">
-        {/* 🔻 내부 Link 제거: 프리젠테이셔널로만 유지 */}
+      <div className="px-3 md:px-4 pt-1 pb-4">
         <div className="relative rounded-3xl overflow-hidden group">
           <div className={`${aspectClass} w-full`}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={"/images/image.png"}
               alt={post.title || "cover"}
@@ -35,6 +34,7 @@ export default function PostCard({ post, aspect = "4/3", className = "" }: PostC
           </div>
 
           {/* Hover overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/55 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             <div className="flex flex-col gap-3">
               {post.tags?.slice(0, 2).map((tag) => (
@@ -47,12 +47,12 @@ export default function PostCard({ post, aspect = "4/3", className = "" }: PostC
               ))}
             </div>
             {post.summary ? (
-              <p className="text-white text-lg md:text-xl leading-relaxed drop-shadow-sm">
+              <p className="text-white text-lg md:text-xl leading-relaxed">
                 {post.summary}
               </p>
             ) : null}
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/55 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          
         </div>
 
         {/* 날짜/NEW 배지 */}
@@ -60,14 +60,13 @@ export default function PostCard({ post, aspect = "4/3", className = "" }: PostC
           <span className="inline-flex items-center px-4 py-2 rounded-full border-2 border-gray-900 text-gray-900 text-sm font-semibold">
             {ymd}
           </span>
-          {post.isNew ? (
+          {isNew ? (
             <span className="inline-flex items-center px-4 py-2 rounded-full border-2 border-gray-900 text-gray-900 text-sm font-semibold">
               NEW POST
             </span>
           ) : null}
         </div>
 
-        {/* 제목(내부 Link도 제거하고 span/문자만) */}
         <h2 className="mt-2 text-xl md:text-2xl font-semibold text-gray-900 tracking-tight">
           <span className="hover:underline">{post.title}</span>
         </h2>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { apiFetch } from '@/services/http';
 
 type TagStat = { name: string, postCount: number };
 type StatsResponse = { tags: TagStat[], totalPosts: number };
@@ -9,31 +10,33 @@ interface TagCloudProps {
 
 export default async function TagCloud({ selectedTag }: TagCloudProps) {
 ;   // 서버에서 직접 API 호출 (페이지마다 최신 반영 원하면 no-store)
-  const res = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN ?? ""}/api/tags/stats`, {
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error("Failed to load /api/tags/stats");
-  const data: StatsResponse = await res.json();
+  const res = await apiFetch<StatsResponse>(`/api/tags/stats`, {});
 
   // ALL POSTS 항목을 수동 추가
   const items: TagStat[] = [
-    { name: "All Posts", postCount: data.totalPosts },
-    ...data.tags,
+    { name: "All Posts", postCount: res.totalPosts },
+    ...res.tags,
   ];
 
   const currentName = selectedTag ? selectedTag : "All Posts";
   const currentCount =
     selectedTag
-      ? data.tags.find((t) => t.name === selectedTag)?.postCount ?? 0
-      : data.totalPosts;
+      ? res.tags.find((t) => t.name === selectedTag)?.postCount ?? 0
+      : res.totalPosts;
 
   return (
     <section className="bg-white">
       {/* 최상단 큰 타이틀 */}
-      <h1 className="text-4xl md:text-6xl font-extrabold italic tracking-tight text-gray-900">
-        {currentName.toUpperCase()}{" "}
-        <span className="align-super text-gray-400 text-xl md:text-2xl">({currentCount})</span>
-      </h1>
+      <div className="mx-auto w-fit flex items-start gap-2">
+        <h1 className="text-4xl md:text-6xl font-extrabold italic tracking-tight text-gray-900">
+          {currentName.toUpperCase()}.
+        </h1>
+
+        {/* 개수: 연한 회색 + 위 첨자 느낌 */}
+        <span className="text-grey-100 italic text-base md:text-base leading-none align-super tabular-nums">
+          ({currentCount})
+        </span>
+      </div>
 
       {/* 태그 나열 */}
       <div className="mt-6 flex flex-wrap gap-x-4 gap-y-3 text-gray-800">
@@ -50,7 +53,7 @@ export default async function TagCloud({ selectedTag }: TagCloudProps) {
               // a 중첩 방지: 내부에 또 Link 쓰지 않음
             >
               {tag.name}
-              <span className="text-gray-500 ml-0.5">({tag.postCount})</span>
+              <span className="ml-1 text-black-500 text-[0.7em] align-super leading-none">({tag.postCount})</span>
             </Link>
           );
         })}
